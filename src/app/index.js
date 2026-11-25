@@ -13,6 +13,11 @@ class App {
     }
 
     this.carousel = new Carousel();
+    this.caption = {
+      number: document.querySelector(".caption__no"),
+      name: document.querySelector(".caption__name"),
+    };
+    this.active = -1;
     this.banners = [];
     this.textures = [];
     this.pointer = { x: -999, y: -999, vx: 0, vy: 0, active: false };
@@ -56,6 +61,7 @@ class App {
 
     this.width = width;
     this.stride = width * 1.28;
+    this.carousel.stride = this.stride;
     this.railY = railY;
     document.documentElement.style.setProperty("--rail-y", `${railY}px`);
 
@@ -101,6 +107,23 @@ class App {
     return this.within(banner.x);
   }
 
+  updateCaption() {
+    const middle = (window.innerWidth - this.width) / 2;
+    let best = null;
+
+    for (const banner of this.banners) {
+      if (!best || Math.abs(banner.x - middle) < Math.abs(best.x - middle)) best = banner;
+    }
+
+    const index = best.index % Poster.count;
+
+    if (index === this.active) return;
+
+    this.active = index;
+    this.caption.number.textContent = `No. ${String(index + 1).padStart(2, "0")}`;
+    this.caption.name.textContent = Poster.name(index);
+  }
+
   simulate() {
     const sway = Math.abs(this.carousel.speed);
     const p = this.pointer;
@@ -131,14 +154,20 @@ class App {
       this.accumulator -= this.step;
     }
 
+    this.updateCaption();
     this.renderer.begin();
 
-    for (const banner of this.banners) {
-      if (!this.visible(banner)) continue;
+    const shown = this.banners.filter((banner) => this.visible(banner));
 
+    for (const banner of shown) {
       banner.cloth.updateNormals();
-      this.renderer.draw(banner);
+      this.renderer.upload(banner);
     }
+
+    this.renderer.pass(true);
+    shown.forEach((banner) => this.renderer.draw(banner));
+    this.renderer.pass(false);
+    shown.forEach((banner) => this.renderer.draw(banner));
 
     requestAnimationFrame((time) => this.tick(time));
   }

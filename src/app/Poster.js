@@ -8,7 +8,13 @@ const THEMES = [
   { bg: "#26262b", ink: "#f2e6cf", a: "#e8452c", b: "#f2e6cf", shape: "rings" },
 ];
 
+const NAMES = ["Sun", "Rainbow", "Barcode", "Patchwork", "Peaks", "Grid", "Orbit"];
+
 export default class Poster {
+  static name(index) {
+    return NAMES[index % NAMES.length];
+  }
+
   static get count() {
     return THEMES.length;
   }
