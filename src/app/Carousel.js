@@ -8,6 +8,7 @@ export default class Carousel {
     this.lastX = 0;
     this.lastTime = 0;
     this.maxSpeed = 4200;
+    this.stride = 0;
 
     window.addEventListener("pointerdown", (event) => this.down(event));
     window.addEventListener("pointermove", (event) => this.move(event));
@@ -62,6 +63,11 @@ export default class Carousel {
     } else {
       this.offset += this.velocity * dt;
       this.velocity *= Math.exp(-2.6 * dt);
+
+      if (this.stride && Math.abs(this.velocity) < 260) {
+        const target = Math.round(this.offset / this.stride) * this.stride;
+        this.offset += (target - this.offset) * Math.min(1, 5 * dt);
+      }
     }
 
     this.speed = (this.offset - this.previous) / dt;
