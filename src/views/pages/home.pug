@@ -1,13 +1,15 @@
-include ../includes/navigation.pug
+.backdrop
 
-main.page-main
-  section.hero
-    h1 Home Page
-    p Welcome to the starter boilerplate.
-    ul
-      li Vite development server
-      li Sass styling support
-      li Pug template structure
-    #image-block
+canvas#stage.stage
 
-include ../includes/footer.pug
+header.top
+  a.top__brand(href="/") Loose Threads
+  p.top__note Hanging posters, simulated as cloth
+
+.rail
+
+footer.hint
+  span Drag or scroll
+  span Hover to push the fabric
+
+p.fallback This page needs WebGL2.
