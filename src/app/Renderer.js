@@ -18,10 +18,13 @@ export default class Renderer {
       uv: gl.getAttribLocation(this.program, "aUv"),
       view: gl.getUniformLocation(this.program, "uView"),
       focal: gl.getUniformLocation(this.program, "uFocal"),
+      shadow: gl.getUniformLocation(this.program, "uShadow"),
       tex: gl.getUniformLocation(this.program, "uTex"),
     };
 
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
   }
 
@@ -118,6 +121,12 @@ export default class Renderer {
     gl.uniform1i(this.locations.tex, 0);
   }
 
+  pass(shadow) {
+    const gl = this.gl;
+    gl.uniform1f(this.locations.shadow, shadow ? 1 : 0);
+    gl.depthMask(!shadow);
+  }
+
   attribute(location, buffer, data, size) {
     const gl = this.gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -128,12 +137,20 @@ export default class Renderer {
     gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
   }
 
+  upload(banner) {
+    const gl = this.gl;
+    gl.bindBuffer(gl.ARRAY_BUFFER, banner.posBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, banner.cloth.pos, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, banner.normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, banner.cloth.normals, gl.DYNAMIC_DRAW);
+  }
+
   draw(banner) {
     const gl = this.gl;
     const { locations } = this;
 
-    this.attribute(locations.pos, banner.posBuffer, banner.cloth.pos, 3);
-    this.attribute(locations.normal, banner.normalBuffer, banner.cloth.normals, 3);
+    this.attribute(locations.pos, banner.posBuffer, null, 3);
+    this.attribute(locations.normal, banner.normalBuffer, null, 3);
     this.attribute(locations.uv, banner.mesh.uvBuffer, null, 2);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, banner.mesh.indexBuffer);
